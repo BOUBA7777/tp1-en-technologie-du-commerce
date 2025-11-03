@@ -47,7 +47,7 @@ Cette application permet aux clients de réserver des créneaux horaires pour de
 
 1. **Cloner le dépôt**
 ```bash
-git clone https://github.com/BOUBA7777/Tp-technologie-du-commerce-lectronique.git
+git clone https://github.com/BOUBA7777/tp1-en-technologie-du-commerce.git
 cd Tp-technologie-du-commerce-lectronique
 ```
 
