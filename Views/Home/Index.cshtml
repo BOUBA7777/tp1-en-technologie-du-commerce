@@ -1,0 +1,179 @@
+﻿@model IEnumerable<TP1.Models.Terrain>
+@{
+    ViewData["Title"] = "Accueil - Terrains de Football";
+}
+
+<!-- Hero Section -->
+<div class="card shadow-lg border-0 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="card-body text-white p-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-futbol me-3"></i>Bienvenue sur Terrains Foot
+                </h1>
+                <p class="lead fs-4 mb-4">Découvrez nos terrains de football à Lévis et Québec. Réservez en quelques clics !</p>
+                @if (!User.IsInRole("Fournisseur") && !User.IsInRole("Admin"))
+                {
+                    <a asp-action="Reserver" class="btn btn-light btn-lg px-5 shadow">
+                        <i class="fas fa-calendar-check me-2"></i>Réserver maintenant
+                    </a>
+                }
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-futbol" style="font-size: 10rem; opacity: 0.15;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nos Terrains -->
+<div class="container">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">
+            <i class="fas fa-futbol text-primary me-3"></i>Nos Terrains
+        </h2>
+        <p class="lead text-muted fs-4">
+            <i class="fas fa-map-marker-alt me-2"></i>
+            @Model.Count() terrains disponibles à Lévis et Québec
+        </p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        @foreach (var terrain in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <!-- Image du terrain -->
+                    <img src="@terrain.ImageUrl" 
+                         class="card-img-top" 
+                         alt="@terrain.Nom" 
+                         style="height: 250px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/400x250?text=Terrain+de+Football'">
+                    
+                    <!-- Badge de localisation -->
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-danger fs-6 px-3 py-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>@terrain.Localisation
+                        </span>
+                    </div>
+                    
+                    <!-- Contenu -->
+                    <div class="card-body d-flex flex-column">
+                        <!-- Nom du terrain -->
+                        <h4 class="card-title fw-bold mb-3">
+                            <i class="fas fa-futbol text-primary me-2"></i>@terrain.Nom
+                        </h4>
+                        
+                        <!-- Type de terrain -->
+                        <div class="mb-3">
+                            @if (terrain.Type == "11-a-side")
+                            {
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-users me-1"></i>11 vs 11 - Grand terrain
+                                </span>
+                            }
+                            else if (terrain.Type == "7-a-side")
+                            {
+                                <span class="badge bg-info fs-6 px-3 py-2">
+                                    <i class="fas fa-user-friends me-1"></i>7 vs 7 - Terrain moyen
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="fas fa-user-group me-1"></i>5 vs 5 - Petit terrain
+                                </span>
+                            }
+                        </div>
+                        
+                        <!-- Description -->
+                        <p class="card-text text-muted flex-grow-1">
+                            @terrain.Description
+                        </p>
+                        
+                        <!-- Statistiques -->
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <div class="row text-center">
+                                <div class="col-12">
+                                    <i class="fas fa-calendar-check text-primary fs-4"></i>
+                                    <p class="mb-0 mt-2 fw-bold">@terrain.Creneaux.Count(c => c.EstDisponible)</p>
+                                    <small class="text-muted">Créneaux disponibles</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bouton Voir détails -->
+                        <a asp-action="DetailsTerrain" asp-route-id="@terrain.Id" 
+                           class="btn btn-primary btn-lg w-100 mt-auto">
+                            <i class="fas fa-info-circle me-2"></i>Voir les détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!User.IsInRole("Fournisseur") && !User.IsInRole("Admin"))
+    {
+        <!-- Call to Action -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card bg-gradient text-white shadow-lg border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-center py-5">
+                        <h3 class="fw-bold mb-3">
+                            <i class="fas fa-search me-2"></i>Vous cherchez un créneau spécifique ?
+                        </h3>
+                        <p class="lead mb-4">
+                            Utilisez notre page de réservation avec filtres avancés pour trouver le créneau parfait
+                        </p>
+                        <a asp-action="Reserver" class="btn btn-light btn-lg px-5">
+                            <i class="fas fa-filter me-2"></i>Recherche Avancée
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Avantages -->
+    <div class="row mb-5 g-4">
+        <div class="col-12 text-center mb-3">
+            <h3 class="display-6 fw-bold">
+                <i class="fas fa-star text-warning me-2"></i>Pourquoi nous choisir ?
+            </h3>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-clock fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Réservation instantanée</h5>
+                    <p class="text-muted mb-0">Réservez en ligne 24h/24, 7j/7</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-success"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Paiement sécurisé</h5>
+                    <p class="text-muted mb-0">Transactions protégées par Stripe</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-star fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Terrains de qualité</h5>
+                    <p class="text-muted mb-0">Installations modernes et bien entretenues</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

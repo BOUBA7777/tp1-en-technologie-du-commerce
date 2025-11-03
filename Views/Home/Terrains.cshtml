@@ -1,0 +1,205 @@
+@model IEnumerable<TP1.Models.Terrain>
+
+@{
+    ViewData["Title"] = "Nos Terrains";
+}
+
+<div class="container mt-4">
+    <!-- En-tête -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">
+            <i class="fas fa-futbol text-primary me-3"></i>Nos Terrains à Lévis, QC
+        </h1>
+        <p class="lead text-muted">
+            Découvrez nos 3 terrains de football de qualité professionnelle situés à Lévis, Québec
+        </p>
+        <hr class="mx-auto" style="width: 100px; height: 3px; background-color: #0d6efd;">
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-5">
+        <div class="col-md-4 text-center">
+            <div class="card border-primary shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                    <h4>Lévis, Québec</h4>
+                    <p class="text-muted">Tous nos terrains sont situés à Lévis</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="card border-success shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                    <h4>Disponible 7j/7</h4>
+                    <p class="text-muted">Réservation en ligne 24h/24</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="card border-warning shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-award fa-3x text-warning mb-3"></i>
+                    <h4>Qualité Premium</h4>
+                    <p class="text-muted">Équipements modernes et professionnels</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des terrains -->
+    <div class="row g-4">
+        @foreach (var terrain in Model)
+        {
+            <div class="col-12">
+                <div class="card shadow-lg border-0 overflow-hidden">
+                    <div class="row g-0">
+                        <!-- Image -->
+                        <div class="col-md-5">
+                            <img src="@terrain.ImageUrl" 
+                                 class="img-fluid w-100 h-100" 
+                                 style="object-fit: cover; min-height: 350px;"
+                                 alt="@terrain.Nom"
+                                 onerror="this.src='https://via.placeholder.com/800x400?text=Terrain+de+Football'">
+                        </div>
+                        
+                        <!-- Informations -->
+                        <div class="col-md-7">
+                            <div class="card-body p-4">
+                                <!-- Nom et type -->
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h2 class="card-title fw-bold mb-0">
+                                        <i class="fas fa-futbol text-primary me-2"></i>@terrain.Nom
+                                    </h2>
+                                    <span class="badge bg-primary fs-6 px-3 py-2">
+                                        @if (terrain.Type == "11-a-side")
+                                        {
+                                            <i class="fas fa-users me-1"></i>@:11 vs 11
+                                        }
+                                        else if (terrain.Type == "7-a-side")
+                                        {
+                                            <i class="fas fa-user-friends me-1"></i>@:7 vs 7
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-user-group me-1"></i>@:5 vs 5
+                                        }
+                                    </span>
+                                </div>
+
+                                <!-- Localisation -->
+                                <div class="mb-3">
+                                    <h5 class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>Localisation
+                                    </h5>
+                                    <p class="ms-4">
+                                        <strong>@terrain.Localisation</strong>
+                                    </p>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    <h5 class="text-muted mb-2">
+                                        <i class="fas fa-info-circle text-info me-2"></i>Description
+                                    </h5>
+                                    <p class="ms-4 text-justify">
+                                        @terrain.Description
+                                    </p>
+                                </div>
+
+                                <!-- Statistiques du terrain -->
+                                <div class="mb-4">
+                                    <h5 class="text-muted mb-2">
+                                        <i class="fas fa-chart-line text-success me-2"></i>Statistiques
+                                    </h5>
+                                    <div class="row ms-2">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <i class="fas fa-calendar me-2 text-primary"></i>
+                                                <strong>Créneaux disponibles :</strong> @terrain.Creneaux.Count(c => c.EstDisponible)
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <i class="fas fa-clock me-2 text-warning"></i>
+                                                <strong>Total de créneaux :</strong> @terrain.Creneaux.Count
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Prix -->
+                                <div class="mb-4">
+                                    <h5 class="text-muted mb-2">
+                                        <i class="fas fa-tag text-warning me-2"></i>Tarification
+                                    </h5>
+                                    <div class="ms-4">
+                                        @{
+                                            var prixMin = terrain.Creneaux.Any() ? terrain.Creneaux.Min(c => c.Prix) : 0;
+                                            var prixMax = terrain.Creneaux.Any() ? terrain.Creneaux.Max(c => c.Prix) : 0;
+                                        }
+                                        <p class="fs-5 mb-0">
+                                            <strong class="text-success">@prixMin.ToString("C") - @prixMax.ToString("C")</strong>
+                                            <small class="text-muted">par créneau (1h30)</small>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Boutons d'action -->
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Home" 
+                                       asp-action="Index" 
+                                       asp-route-typeTerrain="@terrain.Type"
+                                       class="btn btn-primary btn-lg flex-grow-1">
+                                        <i class="fas fa-calendar-alt me-2"></i>Voir les créneaux disponibles
+                                    </a>
+                                    <a asp-controller="Home" 
+                                       asp-action="Index" 
+                                       asp-route-recherche="@terrain.Nom"
+                                       class="btn btn-outline-primary btn-lg">
+                                        <i class="fas fa-search me-2"></i>Rechercher
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Call to action -->
+    <div class="card bg-primary text-white text-center shadow-lg mt-5 mb-4">
+        <div class="card-body py-5">
+            <h3 class="fw-bold mb-3">
+                <i class="fas fa-hand-point-right me-2"></i>Prêt à réserver votre terrain ?
+            </h3>
+            <p class="lead mb-4">
+                Consultez tous les créneaux disponibles et réservez en quelques clics !
+            </p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-light btn-lg px-5">
+                <i class="fas fa-calendar-check me-2"></i>Voir tous les créneaux
+            </a>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="row mt-5 mb-4">
+        <div class="col-md-4 text-center mb-3">
+            <i class="fas fa-parking fa-3x text-primary mb-3"></i>
+            <h5>Stationnement gratuit</h5>
+            <p class="text-muted">Places disponibles sur tous nos sites</p>
+        </div>
+        <div class="col-md-4 text-center mb-3">
+            <i class="fas fa-shower fa-3x text-primary mb-3"></i>
+            <h5>Vestiaires modernes</h5>
+            <p class="text-muted">Équipements neufs et entretenus</p>
+        </div>
+        <div class="col-md-4 text-center mb-3">
+            <i class="fas fa-lightbulb fa-3x text-primary mb-3"></i>
+            <h5>Éclairage nocturne</h5>
+            <p class="text-muted">Jouez jusqu'à 22h tous les jours</p>
+        </div>
+    </div>
+</div>
+

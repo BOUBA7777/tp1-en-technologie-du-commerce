@@ -1,0 +1,147 @@
+@model TP1.Models.Creneau
+@{
+    ViewData["Title"] = "Détails du créneau";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Accueil</a></li>
+        <li class="breadcrumb-item active">Détails du créneau</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            @if (!string.IsNullOrEmpty(Model.Terrain.ImageUrl))
+            {
+                <img src="@Model.Terrain.ImageUrl" class="card-img-top" alt="@Model.Terrain.Nom" style="height: 400px; object-fit: cover;">
+            }
+            else
+            {
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-futbol fa-5x opacity-50"></i>
+                </div>
+            }
+            
+            <div class="card-body">
+                <h2 class="card-title mb-3">@Model.Terrain.Nom</h2>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            <strong>Localisation:</strong> @Model.Terrain.Localisation
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-users text-info me-2"></i>
+                            <strong>Type:</strong> <span class="badge bg-info">@Model.Terrain.Type</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <strong>Date:</strong> @Model.Date.ToString("dddd dd MMMM yyyy")
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-clock text-success me-2"></i>
+                            <strong>Horaire:</strong> @Model.HeureDebut.ToString(@"hh\:mm") - @Model.HeureFin.ToString(@"hh\:mm")
+                        </p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Terrain.Description))
+                {
+                    <hr>
+                    <h5><i class="fas fa-info-circle me-2"></i>Description</h5>
+                    <p>@Model.Terrain.Description</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Réservation</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary mb-0">@Model.Prix.ToString("C")</h2>
+                    <small class="text-muted">Réservation du terrain complet</small>
+                </div>
+
+                <div class="alert @(Model.EstDisponible ? "alert-success" : "alert-danger")">
+                    <i class="fas @(Model.EstDisponible ? "fa-check-circle" : "fa-times-circle") me-2"></i>
+                    <strong>@(Model.EstDisponible ? "Terrain disponible" : "Terrain réservé")</strong>
+                </div>
+
+                @if (Model.EstDisponible)
+                {
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("Fournisseur") || User.IsInRole("Admin"))
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Consultation uniquement (pas de réservation)
+                            </div>
+                        }
+                        else
+                        {
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="creneauId" value="@Model.Id" />
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-cart-plus me-2"></i>Ajouter au panier
+                                    </button>
+                                </div>
+                            </form>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Vous devez être connecté pour réserver
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", "Home", new { id = Model.Id })" 
+                               class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Ce créneau n'est plus disponible
+                    </div>
+                }
+
+                <hr>
+
+                <h6 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Garanties</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Paiement sécurisé</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Confirmation immédiate</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Facture électronique</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux créneaux
+    </a>
+</div>
+
+

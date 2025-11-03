@@ -1,0 +1,58 @@
+@model IEnumerable<TP1.Models.Facture>
+@{
+    ViewData["Title"] = "Mes Factures";
+}
+
+<h2 class="mb-4"><i class="fas fa-file-invoice me-2"></i>Mes Factures</h2>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>N° Facture</th>
+                    <th>Date</th>
+                    <th>Terrain</th>
+                    <th>Créneau</th>
+                    <th>Montant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var facture in Model)
+                {
+                    <tr>
+                        <td><strong>@facture.NumeroFacture</strong></td>
+                        <td>@facture.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@facture.Reservation.Creneau.Terrain.Nom</td>
+                        <td>
+                            <small>
+                                @facture.Reservation.Creneau.Date.ToString("dd/MM/yyyy")<br/>
+                                @facture.Reservation.Creneau.HeureDebut.ToString(@"hh\:mm") - @facture.Reservation.Creneau.HeureFin.ToString(@"hh\:mm")
+                            </small>
+                        </td>
+                        <td><strong class="text-primary">@facture.Montant.ToString("C")</strong></td>
+                        <td>
+                            <a asp-action="Invoice" asp-route-id="@facture.ReservationId" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-file-invoice fa-5x text-muted mb-4"></i>
+            <h3>Aucune facture</h3>
+            <p class="text-muted">Vous n'avez pas encore de facture</p>
+        </div>
+    </div>
+}
+
+

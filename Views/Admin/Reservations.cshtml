@@ -1,0 +1,68 @@
+@model IEnumerable<TP1.Models.Reservation>
+@{
+    ViewData["Title"] = "Gestion des Réservations";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calendar-check me-2"></i>Gestion des Réservations</h2>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Date Résa</th>
+                        <th>Client</th>
+                        <th>Terrain</th>
+                        <th>Créneau</th>
+                        <th>Places</th>
+                        <th>Statut</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reservation in Model)
+                    {
+                        <tr>
+                            <td><strong>#@reservation.Id</strong></td>
+                            <td>@reservation.DateReservation.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <strong>@reservation.Utilisateur.Nom</strong><br/>
+                                <small class="text-muted">@reservation.Utilisateur.Email</small>
+                            </td>
+                            <td>@reservation.Creneau.Terrain.Nom</td>
+                            <td>
+                                @reservation.Creneau.Date.ToString("dd/MM/yyyy")<br/>
+                                <small>@reservation.Creneau.HeureDebut.ToString(@"hh\:mm") - @reservation.Creneau.HeureFin.ToString(@"hh\:mm")</small>
+                            </td>
+                            <td>1 terrain</td>
+                            <td>
+                                @switch (reservation.Statut)
+                                {
+                                    case "Payee":
+                                        <span class="badge bg-success">Payée</span>
+                                        break;
+                                    case "EnAttente":
+                                        <span class="badge bg-warning">En attente</span>
+                                        break;
+                                    case "Annulee":
+                                        <span class="badge bg-danger">Annulée</span>
+                                        break;
+                                }
+                            </td>
+                            <td><strong class="text-success">@reservation.MontantTotal.ToString("C")</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+

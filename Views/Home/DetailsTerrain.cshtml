@@ -1,0 +1,126 @@
+@model TP1.Models.Terrain
+@{
+    ViewData["Title"] = Model.Nom;
+}
+
+<!-- Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Accueil</a></li>
+        <li class="breadcrumb-item active">@Model.Nom</li>
+    </ol>
+</nav>
+
+<!-- Carte du terrain -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="row g-0">
+        <!-- Image -->
+        <div class="col-md-6">
+            <img src="@Model.ImageUrl" 
+                 class="img-fluid w-100 h-100" 
+                 style="object-fit: cover; min-height: 400px;"
+                 alt="@Model.Nom">
+        </div>
+        
+        <!-- Informations -->
+        <div class="col-md-6">
+            <div class="card-body p-5">
+                <!-- Badge localisation -->
+                <span class="badge bg-danger fs-5 px-3 py-2 mb-3">
+                    <i class="fas fa-map-marker-alt me-2"></i>@Model.Localisation
+                </span>
+                
+                <!-- Nom -->
+                <h1 class="display-4 fw-bold mb-4">@Model.Nom</h1>
+                
+                <!-- Type -->
+                <div class="mb-4">
+                    @if (Model.Type == "11-a-side")
+                    {
+                        <span class="badge bg-success fs-4 px-4 py-3">
+                            <i class="fas fa-users me-2"></i>11 vs 11 - Grand terrain
+                        </span>
+                    }
+                    else if (Model.Type == "7-a-side")
+                    {
+                        <span class="badge bg-info fs-4 px-4 py-3">
+                            <i class="fas fa-user-friends me-2"></i>7 vs 7 - Terrain moyen
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-4 px-4 py-3">
+                            <i class="fas fa-user-group me-2"></i>5 vs 5 - Petit terrain
+                        </span>
+                    }
+                </div>
+                
+                <!-- Description -->
+                <p class="lead mb-4">@Model.Description</p>
+                
+                <!-- Statistiques -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="text-center p-4 bg-light rounded">
+                            <i class="fas fa-calendar-check text-primary fa-3x mb-3"></i>
+                            <h2 class="mb-0 text-primary">@Model.Creneaux.Count(c => c.EstDisponible)</h2>
+                            <p class="text-muted mb-0">Créneaux disponibles</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bouton Réserver -->
+                @if (User.IsInRole("Fournisseur") || User.IsInRole("Admin"))
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Consultation uniquement</strong>
+                        <p class="mb-0 mt-2 small">Mode consultation (pas de réservation)</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-grid gap-2">
+                        <a asp-action="ReserverTerrain" asp-route-id="@Model.Id" 
+                           class="btn btn-primary btn-lg py-3">
+                            <i class="fas fa-calendar-check me-2"></i>Réserver ce terrain
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations supplémentaires -->
+<div class="row mb-4">
+    <div class="col-md-4 text-center mb-3">
+        <div class="p-4 bg-light rounded">
+            <i class="fas fa-parking fa-3x text-primary mb-3"></i>
+            <h5>Stationnement gratuit</h5>
+            <p class="text-muted mb-0">Places disponibles sur place</p>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-3">
+        <div class="p-4 bg-light rounded">
+            <i class="fas fa-shower fa-3x text-primary mb-3"></i>
+            <h5>Vestiaires modernes</h5>
+            <p class="text-muted mb-0">Équipements neufs et entretenus</p>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-3">
+        <div class="p-4 bg-light rounded">
+            <i class="fas fa-lightbulb fa-3x text-primary mb-3"></i>
+            <h5>Éclairage nocturne</h5>
+            <p class="text-muted mb-0">Jouez jusqu'à 22h tous les jours</p>
+        </div>
+    </div>
+</div>
+
+<!-- Bouton retour -->
+<div class="text-center">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-5">
+        <i class="fas fa-arrow-left me-2"></i>Retour à l'accueil
+    </a>
+</div>
+

@@ -1,0 +1,143 @@
+@model IEnumerable<TP1.Models.Reservation>
+@{
+    ViewData["Title"] = "Mes Réservations";
+}
+
+<h2 class="mb-4"><i class="fas fa-calendar-check me-2"></i>Mes Réservations</h2>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var reservation in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrEmpty(reservation.Creneau.Terrain.ImageUrl))
+                    {
+                        <img src="@reservation.Creneau.Terrain.ImageUrl" class="card-img-top" alt="@reservation.Creneau.Terrain.Nom" style="height: 180px; object-fit: cover;">
+                    }
+                    
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@reservation.Creneau.Terrain.Nom</h5>
+                            @switch (reservation.Statut)
+                            {
+                                case "Payee":
+                                    <span class="badge bg-success">Confirmée</span>
+                                    break;
+                                case "EnAttente":
+                                    <span class="badge bg-warning">En attente</span>
+                                    break;
+                                case "Annulee":
+                                    <span class="badge bg-danger">Annulée</span>
+                                    break;
+                            }
+                        </div>
+                        
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>@reservation.Creneau.Terrain.Localisation
+                        </p>
+                        
+                        <div class="mb-3">
+                            <div class="small">
+                                <i class="fas fa-calendar text-primary me-1"></i>
+                                <strong>@reservation.Creneau.Date.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                            <div class="small">
+                                <i class="fas fa-clock text-info me-1"></i>
+                                @reservation.Creneau.HeureDebut.ToString(@"hh\:mm") - @reservation.Creneau.HeureFin.ToString(@"hh\:mm")
+                            </div>
+                            <div class="small">
+                                <i class="fas fa-futbol text-success me-1"></i>
+                                Terrain complet
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5 class="text-primary mb-3">@reservation.MontantTotal.ToString("C")</h5>
+                            
+                            <div class="d-flex gap-2 flex-wrap">
+                                @if (reservation.Facture != null)
+                                {
+                                    <a asp-action="Invoice" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-invoice me-1"></i>Facture
+                                    </a>
+                                }
+                                
+                                @if (reservation.Statut == "Payee")
+                                {
+                                    var delaiAnnulation = TimeSpan.FromHours(24);
+                                    
+                                    // Condition 1 : Moins de 24h depuis la réservation
+                                    var dateLimiteAnnulation = reservation.DateReservation.Add(delaiAnnulation);
+                                    var dansDelaiReservation = DateTime.Now <= dateLimiteAnnulation;
+                                    
+                                    // Condition 2 : Plus de 24h avant le créneau
+                                    var dateTimeCreneau = reservation.Creneau.Date.Add(reservation.Creneau.HeureDebut);
+                                    var avantDelaiCreneau = DateTime.Now <= dateTimeCreneau.Subtract(delaiAnnulation);
+                                    
+                                    // Les DEUX conditions doivent être vraies
+                                    var peutAnnuler = dansDelaiReservation && avantDelaiCreneau;
+                                    
+                                    if (peutAnnuler)
+                                    {
+                                        var tempsRestantReservation = dateLimiteAnnulation - DateTime.Now;
+                                        var tempsAvantCreneau = dateTimeCreneau.Subtract(delaiAnnulation) - DateTime.Now;
+                                        var tempsRestant = tempsRestantReservation < tempsAvantCreneau ? tempsRestantReservation : tempsAvantCreneau;
+                                        
+                                        <form asp-action="Cancel" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
+                                            <input type="hidden" name="id" value="@reservation.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Annuler
+                                            </button>
+                                        </form>
+                                        <small class="d-block text-muted mt-1">
+                                            <i class="fas fa-clock me-1"></i>Annulation possible
+                                            @if (tempsRestant.TotalHours < 6)
+                                            {
+                                                <span class="text-warning fw-bold">
+                                                    (Plus que @Math.Floor(tempsRestant.TotalHours)h @tempsRestant.Minutes min !)
+                                                </span>
+                                            }
+                                        </small>
+                                    }
+                                    else if (!dansDelaiReservation)
+                                    {
+                                        <small class="d-block text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>Délai d'annulation dépassé (>24h après réservation)
+                                        </small>
+                                    }
+                                    else if (!avantDelaiCreneau)
+                                    {
+                                        <small class="d-block text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>Créneau dans moins de 24h (annulation impossible)
+                                        </small>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-light small text-muted">
+                        <i class="fas fa-clock me-1"></i>Réservé le @reservation.DateReservation.ToString("dd/MM/yyyy à HH:mm")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card shadow-sm text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-calendar-times fa-5x text-muted mb-4"></i>
+            <h3>Aucune réservation</h3>
+            <p class="text-muted">Vous n'avez pas encore effectué de réservation</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">
+                <i class="fas fa-search me-2"></i>Parcourir les créneaux
+            </a>
+        </div>
+    </div>
+}
+
+

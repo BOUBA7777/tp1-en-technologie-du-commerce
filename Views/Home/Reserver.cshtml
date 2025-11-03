@@ -1,0 +1,243 @@
+@model IEnumerable<TP1.Models.Creneau>
+@{
+    ViewData["Title"] = "Réservation";
+    var terrains = ViewBag.Terrains as IEnumerable<TP1.Models.Terrain> ?? new List<TP1.Models.Terrain>();
+}
+
+<!-- En-tête -->
+<div class="bg-primary text-white rounded-3 p-4 mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-calendar-check me-2"></i>Réservation
+    </h1>
+    <p class="lead mb-0">Recherchez un créneau avec les filtres ou choisissez directement un terrain ci-dessous</p>
+</div>
+
+<!-- Filtres -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h4 class="mb-0">
+            <i class="fas fa-filter text-primary me-2"></i>Filtres de Recherche
+        </h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Reserver" method="get">
+            <div class="row g-3">
+                <!-- Date -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar text-primary me-2"></i>Date
+                    </label>
+                    <input type="date" 
+                           name="date" 
+                           class="form-control form-control-lg" 
+                           value="@ViewBag.Date?.ToString("yyyy-MM-dd")"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           max="@DateTime.Today.AddDays(14).ToString("yyyy-MM-dd")" />
+                    <small class="text-muted d-block mt-1">Réservations limitées à 14 jours</small>
+                </div>
+                
+                <!-- Ville -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>Ville
+                    </label>
+                    <select name="ville" class="form-select form-select-lg">
+                        <option value="">-- Toutes les villes --</option>
+                        <option value="Lévis" selected="@(ViewBag.Ville == "Lévis")">Lévis</option>
+                        <option value="Québec" selected="@(ViewBag.Ville == "Québec")">Québec</option>
+                    </select>
+                </div>
+                
+                <!-- Terrain -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-futbol text-success me-2"></i>Terrain
+                    </label>
+                    <select name="terrain" class="form-select form-select-lg">
+                        <option value="">-- Tous les terrains --</option>
+                        @foreach (var t in terrains.OrderBy(x => x.Localisation).ThenBy(x => x.Nom))
+                        {
+                            <option value="@t.Nom" selected="@(ViewBag.Terrain == t.Nom)">
+                                @t.Nom (@t.Localisation)
+                            </option>
+                        }
+                    </select>
+                </div>
+                
+                <!-- Type -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-users text-info me-2"></i>Type
+                    </label>
+                    <select name="type" class="form-select form-select-lg">
+                        <option value="">-- Tous les types --</option>
+                        <option value="5-a-side" selected="@(ViewBag.Type == "5-a-side")">5 vs 5 (Petit)</option>
+                        <option value="7-a-side" selected="@(ViewBag.Type == "7-a-side")">7 vs 7 (Moyen)</option>
+                        <option value="11-a-side" selected="@(ViewBag.Type == "11-a-side")">11 vs 11 (Grand)</option>
+                    </select>
+                </div>
+                
+                <!-- Plage Horaire -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-clock text-warning me-2"></i>Plage Horaire
+                    </label>
+                    <select name="plageHoraire" class="form-select form-select-lg">
+                        <option value="">-- Toute la journée --</option>
+                        <option value="matin" selected="@(ViewBag.PlageHoraire == "matin")">Matin (6h - 12h)</option>
+                        <option value="apres-midi" selected="@(ViewBag.PlageHoraire == "apres-midi")">Après-midi (12h - 18h)</option>
+                        <option value="soir" selected="@(ViewBag.PlageHoraire == "soir")">Soir (18h - 23h)</option>
+                    </select>
+                </div>
+                
+                <!-- Recherche par nom -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-search text-secondary me-2"></i>Recherche par Nom
+                    </label>
+                    <input type="text" 
+                           name="recherche" 
+                           class="form-control form-control-lg" 
+                           placeholder="Ex: Central, Desjardins..."
+                           value="@ViewBag.Recherche" />
+                    <small class="text-muted d-block mt-1">Recherche dans le nom du terrain</small>
+                </div>
+                
+                <!-- Boutons -->
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 me-2">
+                        <i class="fas fa-search me-2"></i>Rechercher
+                    </button>
+                    <a asp-action="Reserver" class="btn btn-outline-secondary btn-lg px-5">
+                        <i class="fas fa-redo me-2"></i>Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Résultats de la recherche -->
+@if (Model.Any())
+{
+    <div class="mb-4 mt-5">
+        <h3 class="fw-bold">
+            <i class="fas fa-list-ul text-success me-2"></i>
+            Créneaux Disponibles (@Model.Count())
+        </h3>
+        <p class="text-muted">Cliquez sur "Voir détails" pour réserver un créneau</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var creneau in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm hover-card">
+                    <!-- Image -->
+                    <img src="@creneau.Terrain.ImageUrl" 
+                         class="card-img-top" 
+                         alt="@creneau.Terrain.Nom" 
+                         style="height: 180px; object-fit: cover;">
+                    
+                    <!-- Badges -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-danger">
+                            <i class="fas fa-map-marker-alt me-1"></i>@creneau.Terrain.Localisation
+                        </span>
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i>Disponible
+                        </span>
+                    </div>
+                    
+                    <!-- Contenu -->
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">@creneau.Terrain.Nom</h5>
+                        
+                        <!-- Type -->
+                        <div class="mb-3">
+                            @if (creneau.Terrain.Type == "11-a-side")
+                            {
+                                <span class="badge bg-success me-1">11 vs 11</span>
+                            }
+                            else if (creneau.Terrain.Type == "7-a-side")
+                            {
+                                <span class="badge bg-info me-1">7 vs 7</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark me-1">5 vs 5</span>
+                            }
+                            <span class="badge bg-success">Disponible</span>
+                        </div>
+                        
+                        <!-- Date et heure -->
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar text-primary me-2"></i>
+                                <strong>@creneau.Date.ToString("dddd dd MMMM yyyy")</strong>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <span>@creneau.HeureDebut.ToString(@"hh\:mm") - @creneau.HeureFin.ToString(@"hh\:mm")</span>
+                                <small class="text-muted ms-2">(90 min)</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Prix -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-primary mb-0">@creneau.Prix.ToString("C")</h4>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer avec bouton -->
+                    <div class="card-footer bg-white border-top-0">
+                        @if (User.IsInRole("Fournisseur") || User.IsInRole("Admin"))
+                        {
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Consultation uniquement
+                            </div>
+                        }
+                        else
+                        {
+                            <a asp-action="Details" asp-route-id="@creneau.Id" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-calendar-check me-2"></i>Réserver le terrain
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center py-5">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h4>Aucun créneau disponible</h4>
+        <p class="mb-3">Essayez de modifier vos critères de recherche</p>
+        <a asp-action="Reserver" class="btn btn-primary">
+            <i class="fas fa-redo me-2"></i>Réinitialiser les filtres
+        </a>
+    </div>
+}
+
+<style>
+    .hover-card-terrain {
+        transition: all 0.3s ease;
+    }
+    .hover-card-terrain:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+

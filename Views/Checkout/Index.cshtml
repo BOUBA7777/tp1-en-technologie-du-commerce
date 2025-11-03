@@ -1,0 +1,239 @@
+@model IEnumerable<TP1.Models.PanierItem>
+@{
+    ViewData["Title"] = "Paiement";
+    var total = ViewBag.Total as decimal? ?? 0;
+    var stripeKey = ViewBag.StripePublishableKey as string;
+}
+
+<h2 class="mb-4"><i class="fas fa-credit-card me-2"></i>Paiement sécurisé</h2>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Récapitulatif de la commande</h5>
+            </div>
+            <div class="card-body">
+                @foreach (var item in Model)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">@item.Creneau.Terrain.Nom</h6>
+                            <small class="text-muted">
+                                @item.Creneau.Date.ToString("dd/MM/yyyy") 
+                                - @item.Creneau.HeureDebut.ToString(@"hh\:mm") à @item.Creneau.HeureFin.ToString(@"hh\:mm")
+                            </small>
+                        </div>
+                        <strong>@item.Creneau.Prix.ToString("C")</strong>
+                    </div>
+                }
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <h4>Total:</h4>
+                    <h3 class="text-primary mb-0">@total.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Informations de paiement</h5>
+            </div>
+            <div class="card-body">
+                <!-- Champ pour le nom -->
+                <div class="mb-3">
+                    <label for="cardholder-name" class="form-label fw-bold">
+                        <i class="fas fa-user me-1"></i>Nom du titulaire de la carte
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control form-control-lg" 
+                        id="cardholder-name" 
+                        placeholder="Jean Dupont"
+                        required>
+                </div>
+
+                <!-- Élément de carte Stripe -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-credit-card me-1"></i>Informations de la carte
+                    </label>
+                    <div id="payment-element" class="form-control form-control-lg p-3"></div>
+                </div>
+
+                <!-- Champ pour le code postal -->
+                <div class="mb-3">
+                    <label for="postal-code" class="form-label fw-bold">
+                        <i class="fas fa-map-marker-alt me-1"></i>Code postal
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control form-control-lg" 
+                        id="postal-code" 
+                        placeholder="75001"
+                        maxlength="10"
+                        required>
+                </div>
+
+                <div id="payment-errors" class="alert alert-danger mt-3" style="display: none;"></div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button id="submit-payment" class="btn btn-primary btn-lg">
+                        <i class="fas fa-lock me-2"></i>Payer @total.ToString("C")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-shield-alt text-success me-2"></i>Paiement 100% sécurisé</h6>
+                <p class="small mb-3">Vos informations bancaires sont cryptées et sécurisées par Stripe.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                    <i class="fab fa-cc-mastercard fa-2x text-warning"></i>
+                    <i class="fab fa-cc-amex fa-2x text-info"></i>
+                </div>
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Après votre paiement</h6>
+                <ul class="small list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Confirmation immédiate par email</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Facture électronique disponible</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Accès à vos réservations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        var stripe = Stripe('@stripeKey');
+        var elements = stripe.elements();
+        
+        var cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            },
+            hidePostalCode: true,
+            disableLink: true
+        });
+        
+        cardElement.mount('#payment-element');
+
+        cardElement.on('change', function(event) {
+            var displayError = document.getElementById('payment-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+                displayError.style.display = 'block';
+            } else {
+                displayError.textContent = '';
+                displayError.style.display = 'none';
+            }
+        });
+
+        document.getElementById('submit-payment').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const button = e.target;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
+
+            try {
+                const response = await fetch('@Url.Action("CreatePaymentIntent", "Checkout")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la création du paiement');
+                }
+
+                const data = await response.json();
+                const { clientSecret } = data;
+
+                const cardholderName = document.getElementById('cardholder-name').value;
+                const postalCode = document.getElementById('postal-code').value;
+                
+                if (!cardholderName.trim()) {
+                    document.getElementById('payment-errors').textContent = 'Veuillez entrer le nom du titulaire de la carte';
+                    document.getElementById('payment-errors').style.display = 'block';
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-lock me-2"></i>Payer @total.ToString("C")';
+                    return;
+                }
+
+                if (!postalCode.trim()) {
+                    document.getElementById('payment-errors').textContent = 'Veuillez entrer le code postal';
+                    document.getElementById('payment-errors').style.display = 'block';
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-lock me-2"></i>Payer @total.ToString("C")';
+                    return;
+                }
+
+                const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: cardholderName,
+                            address: {
+                                postal_code: postalCode
+                            }
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error('Erreur Stripe:', error);
+                    document.getElementById('payment-errors').textContent = error.message;
+                    document.getElementById('payment-errors').style.display = 'block';
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-lock me-2"></i>Payer @total.ToString("C")';
+                } else if (paymentIntent.status === 'succeeded') {
+                    console.log('Paiement réussi!');
+                    
+                    const confirmResponse = await fetch('@Url.Action("ConfirmPayment", "Checkout")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ paymentIntentId: paymentIntent.id })
+                    });
+
+                    if (!confirmResponse.ok) {
+                        const errorData = await confirmResponse.json();
+                        document.getElementById('payment-errors').textContent = errorData.error || 'Erreur de confirmation';
+                        document.getElementById('payment-errors').style.display = 'block';
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-lock me-2"></i>Payer @total.ToString("C")';
+                        return;
+                    }
+
+                    window.location.href = '@Url.Action("Success", "Checkout")';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('payment-errors').textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                document.getElementById('payment-errors').style.display = 'block';
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-lock me-2"></i>Payer @total.ToString("C")';
+            }
+        });
+    </script>
+}
+
+

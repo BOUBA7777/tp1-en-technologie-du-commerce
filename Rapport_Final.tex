@@ -1,0 +1,932 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{float}
+
+\geometry{margin=2.5cm}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Système de Réservation de Terrains de Football}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{ASP.NET Core MVC - 2025}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\title{
+    \Huge\textbf{Système de Réservation de Terrains de Football} \\
+    \vspace{1cm}
+    \Large Application Web ASP.NET Core MVC \\
+    \vspace{0.5cm}
+    \large Avec Intégration Stripe et API REST
+}
+
+\author{
+    \textbf{Aboubacar Tounkara} - Développement Backend \\
+    \textbf{Eli Daniel Senyo} - Développement Frontend \\
+    \vspace{0.5cm}
+    Projet de Technologies du Commerce Électronique
+}
+
+\date{2 novembre 2025}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Contexte du Projet}
+
+Ce projet consiste en la conception et le développement d'une application web complète de réservation de terrains de football. L'application permet aux utilisateurs de consulter des terrains disponibles, de réserver des créneaux horaires, et d'effectuer des paiements en ligne de manière sécurisée.
+
+\subsection{Objectifs}
+
+Les principaux objectifs de ce projet sont :
+
+\begin{itemize}
+    \item Développer une application web moderne utilisant le framework ASP.NET Core MVC
+    \item Implémenter un système d'authentification multi-rôles (Admin, Fournisseur, Client)
+    \item Intégrer un système de paiement sécurisé via Stripe
+    \item Consommer une API REST externe pour démontrer l'intégration de services tiers
+    \item Créer une interface utilisateur responsive et intuitive
+    \item Gérer les réservations et les disponibilités en temps réel
+\end{itemize}
+
+\subsection{Technologies Utilisées}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Catégorie} & \textbf{Technologie} \\ \midrule
+Framework Backend & ASP.NET Core 8.0 MVC \\
+Langage & C\# 12 \\
+Base de Données & SQL Server (LocalDB) \\
+ORM & Entity Framework Core 9.0 \\
+Authentification & ASP.NET Core Identity \\
+Paiement en Ligne & Stripe API \\
+API Externe & DummyJSON REST API \\
+Frontend & Razor Views, Bootstrap 5 \\
+Icônes & Font Awesome 6 \\
+Gestion de Projet & Git \\
+IDE & Visual Studio / VS Code \\ \bottomrule
+\end{tabular}
+\caption{Stack Technique du Projet}
+\end{table}
+
+\subsection{Répartition des Tâches}
+
+Le développement de ce projet a été réalisé en collaboration par deux membres de l'équipe, chacun spécialisé dans un domaine spécifique.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}p{4cm}p{10cm}@{}}
+\toprule
+\textbf{Membre} & \textbf{Responsabilités} \\ \midrule
+
+\textbf{Aboubacar Tounkara} & 
+\begin{itemize}[leftmargin=*, nosep]
+    \item Architecture et modèle de données (Models)
+    \item Logique métier et contrôleurs (Controllers)
+    \item Entity Framework Core et migrations
+    \item Services backend (Paiement, Creneaux, Factures)
+    \item Intégration Stripe API
+    \item API DummyJSON et consommation HTTP
+    \item Système d'authentification et autorisation
+    \item Gestion des réservations et annulations
+    \item Configuration de la base de données
+    \item Déploiement et tests
+\end{itemize} \\ \midrule
+
+\textbf{Eli Daniel Senyo} & 
+\begin{itemize}[leftmargin=*, nosep]
+    \item Interface utilisateur et design (Views)
+    \item Intégration Bootstrap et CSS personnalisé
+    \item Pages Razor et composants visuels
+    \item Formulaires de paiement Stripe Elements
+    \item Design responsive et mobile-first
+    \item JavaScript côté client
+    \item Icônes Font Awesome et animations
+    \item Expérience utilisateur (UX/UI)
+    \item Pages d'erreur personnalisées
+    \item Optimisation de l'interface
+\end{itemize} \\ \bottomrule
+\end{tabular}
+\caption{Répartition des Tâches entre les Membres}
+\end{table}
+
+\subsubsection{Collaboration}
+
+La collaboration entre le backend et le frontend a été essentielle pour assurer la cohérence de l'application :
+
+\begin{itemize}
+    \item \textbf{Communication continue} : Coordination sur les modèles de données et les ViewModels
+    \item \textbf{Revues de code} : Validation mutuelle du code pour garantir la qualité
+    \item \textbf{Tests intégrés} : Tests des flux complets de l'application ensemble
+    \item \textbf{Résolution de problèmes} : Travail conjoint sur les bugs et les optimisations
+\end{itemize}
+
+\newpage
+\section{Architecture de l'Application}
+
+\subsection{Architecture MVC}
+
+L'application suit le pattern architectural Model-View-Controller (MVC) qui sépare les responsabilités :
+
+\begin{itemize}
+    \item \textbf{Models} : Représentent les entités métier et la structure de données (Aboubacar)
+    \item \textbf{Views} : Gèrent l'affichage et l'interface utilisateur (Eli)
+    \item \textbf{Controllers} : Coordonnent les interactions entre les modèles et les vues (Aboubacar)
+\end{itemize}
+
+\subsection{Structure du Projet}
+
+\begin{lstlisting}[language=bash, caption=Organisation des Dossiers]
+TP1/
+├── Controllers/         # Contrôleurs MVC (Aboubacar)
+├── Models/             # Modèles de données (Aboubacar)
+├── Views/              # Vues Razor (Eli)
+├── Data/               # Contexte et initialisation DB (Aboubacar)
+├── Services/           # Services métier (Aboubacar)
+├── Migrations/         # Migrations Entity Framework (Aboubacar)
+└── wwwroot/           # Fichiers statiques CSS, JS (Eli)
+\end{lstlisting}
+
+\subsection{Modèle de Données}
+
+\subsubsection{Entités Principales}
+
+\begin{enumerate}
+    \item \textbf{Utilisateur} : Hérite d'IdentityUser avec des propriétés personnalisées
+    \item \textbf{Terrain} : Représente un terrain de football avec ses caractéristiques
+    \item \textbf{Creneau} : Définit les plages horaires disponibles pour chaque terrain
+    \item \textbf{Reservation} : Enregistre les réservations effectuées
+    \item \textbf{PanierItem} : Gère le panier d'achat temporaire
+    \item \textbf{Paiement} : Stocke les informations de paiement Stripe
+    \item \textbf{Facture} : Génère les factures pour les réservations payées
+\end{enumerate}
+
+\subsubsection{Relations Entre Entités}
+
+\begin{itemize}
+    \item Un \textbf{Terrain} appartient à un \textbf{Fournisseur} (1-N)
+    \item Un \textbf{Terrain} possède plusieurs \textbf{Créneaux} (1-N)
+    \item Un \textbf{Créneau} peut avoir une \textbf{Réservation} (1-1)
+    \item Une \textbf{Réservation} est liée à un \textbf{Utilisateur} (N-1)
+    \item Une \textbf{Réservation} génère un \textbf{Paiement} et une \textbf{Facture} (1-1)
+\end{itemize}
+
+\newpage
+\section{Fonctionnalités Principales}
+
+\subsection{Système d'Authentification et d'Autorisation}
+
+\subsubsection{Gestion des Rôles}
+
+L'application implémente trois rôles distincts avec des permissions spécifiques :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}p{3cm}p{10cm}@{}}
+\toprule
+\textbf{Rôle} & \textbf{Permissions} \\ \midrule
+\textbf{Admin} & 
+\begin{itemize}[leftmargin=*, nosep]
+    \item Accès au tableau de bord administrateur
+    \item Gestion des utilisateurs
+    \item Consultation des réservations globales
+    \item Visualisation des statistiques complètes
+    \item Accès aux utilisateurs fictifs via API
+\end{itemize} \\ \midrule
+
+\textbf{Fournisseur} & 
+\begin{itemize}[leftmargin=*, nosep]
+    \item Gestion de ses propres terrains (CRUD)
+    \item Visualisation de ses gains cumulés
+    \item Consultation des réservations de ses terrains
+    \item Création automatique de créneaux
+\end{itemize} \\ \midrule
+
+\textbf{Client} & 
+\begin{itemize}[leftmargin=*, nosep]
+    \item Consultation des terrains disponibles
+    \item Recherche et filtrage de terrains
+    \item Ajout de créneaux au panier
+    \item Réservation et paiement en ligne
+    \item Annulation de réservations (sous conditions)
+    \item Consultation de l'historique et des factures
+\end{itemize} \\ \bottomrule
+\end{tabular}
+\caption{Permissions par Rôle}
+\end{table}
+
+\subsubsection{Comptes de Test}
+
+\begin{lstlisting}[language=bash, caption=Identifiants de Connexion]
+# Administrateur
+Email: admin@foot.com
+Mot de passe: Admin123
+
+# Fournisseur
+Email: fournisseur@foot.com
+Mot de passe: Fournisseur123
+
+# Client
+Email: client@foot.com
+Mot de passe: Client123
+\end{lstlisting}
+
+\subsection{Gestion des Terrains}
+
+\subsubsection{Pour les Fournisseurs}
+
+Les fournisseurs peuvent gérer leurs terrains de manière autonome :
+
+\begin{itemize}
+    \item \textbf{Création de terrain} : Ajout avec nom, type, localisation, description
+    \item \textbf{Types disponibles} : 5-a-side, 7-a-side, 11-a-side
+    \item \textbf{Génération automatique} : 14 jours de créneaux créés automatiquement
+    \item \textbf{Horaires prédéfinis} : 7 créneaux par jour (8h-21h30) avec 30 min de pause entre chaque
+    \item \textbf{Durée des créneaux} : 1h30 de jeu + 30 min de pause
+    \item \textbf{Tarification} : Prix adapté selon le type de terrain
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Type de Terrain} & \textbf{Prix par Créneau} \\ \midrule
+5-a-side & \$35.00 \\
+7-a-side & \$55.00 \\
+11-a-side & \$90.00 \\ \bottomrule
+\end{tabular}
+\caption{Grille Tarifaire}
+\end{table}
+
+\subsubsection{Pour les Clients}
+
+\begin{itemize}
+    \item Consultation de tous les terrains disponibles
+    \item Filtrage par type, localisation et date
+    \item Visualisation des créneaux disponibles
+    \item Détails complets pour chaque terrain
+\end{itemize}
+
+\subsection{Système de Réservation}
+
+\subsubsection{Processus de Réservation}
+
+Le processus de réservation suit un flux structuré :
+
+\begin{enumerate}
+    \item \textbf{Sélection} : Le client choisit un terrain et un créneau
+    \item \textbf{Panier} : Ajout au panier (le créneau devient indisponible)
+    \item \textbf{Récapitulatif} : Vérification des informations
+    \item \textbf{Paiement} : Saisie des informations bancaires via Stripe
+    \item \textbf{Confirmation} : Génération de la facture et email de confirmation
+\end{enumerate}
+
+\subsubsection{Gestion du Panier}
+
+\begin{itemize}
+    \item Icône flottante affichant le nombre d'articles
+    \item Ajout/Suppression de créneaux
+    \item Calcul automatique du total
+    \item Réservation des créneaux (non disponibles pour les autres)
+\end{itemize}
+
+\subsubsection{Annulation de Réservation}
+
+Les clients peuvent annuler leurs réservations sous deux conditions \textbf{cumulatives} :
+
+\begin{enumerate}
+    \item Moins de 24 heures depuis la réservation
+    \item Plus de 24 heures avant le début du créneau
+\end{enumerate}
+
+Lors de l'annulation :
+\begin{itemize}
+    \item Le statut passe à "Annulée"
+    \item Le créneau redevient disponible
+    \item Notification de confirmation
+\end{itemize}
+
+\newpage
+\section{Intégration du Paiement Stripe}
+
+\subsection{Configuration}
+
+L'application utilise l'API Stripe en mode test pour les paiements sécurisés.
+
+\subsubsection{Clés API}
+
+\begin{lstlisting}[language=json, caption=Configuration dans appsettings.json]
+{
+  "Stripe": {
+    "PublishableKey": "pk_test_...",
+    "SecretKey": "sk_test_..."
+  }
+}
+\end{lstlisting}
+
+\subsection{Architecture du Paiement}
+
+\subsubsection{Stripe Elements}
+
+L'implémentation utilise Stripe Elements (méthode classique) :
+
+\begin{lstlisting}[language=JavaScript, caption=Initialisation Stripe Elements]
+var stripe = Stripe(publishableKey);
+var elements = stripe.elements();
+
+var cardElement = elements.create('card', {
+    hidePostalCode: true,
+    disableLink: true
+});
+
+cardElement.mount('#payment-element');
+\end{lstlisting}
+
+\subsubsection{Flux de Paiement}
+
+\begin{enumerate}
+    \item \textbf{Création du PaymentIntent} : Le serveur crée un PaymentIntent avec le montant
+    \item \textbf{Saisie des informations} : Le client remplit le formulaire
+    \item \textbf{Confirmation} : Stripe valide et confirme le paiement
+    \item \textbf{Enregistrement} : Le serveur enregistre la réservation et génère la facture
+\end{enumerate}
+
+\subsection{Informations Requises}
+
+Le formulaire de paiement demande :
+
+\begin{itemize}
+    \item Nom du titulaire de la carte
+    \item Numéro de carte bancaire
+    \item Date d'expiration
+    \item Code CVC
+    \item Code postal
+\end{itemize}
+
+\subsection{Cartes de Test}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Numéro} & \textbf{Type} & \textbf{Résultat} \\ \midrule
+4242 4242 4242 4242 & Visa & Succès \\
+4000 0025 0000 3155 & Visa (3D Secure) & Succès après auth \\
+4000 0000 0000 9995 & Visa & Décliné \\ \bottomrule
+\end{tabular}
+\caption{Cartes Bancaires de Test Stripe}
+\end{table}
+
+\subsection{Sécurité}
+
+\begin{itemize}
+    \item Aucune donnée bancaire stockée sur le serveur
+    \item Tokenisation via Stripe
+    \item Connexion HTTPS obligatoire
+    \item Validation côté client et serveur
+\end{itemize}
+
+\newpage
+\section{Intégration API REST Externe}
+
+\subsection{DummyJSON API}
+
+Pour démontrer la consommation d'une API REST externe, l'application intègre l'API DummyJSON.
+
+\subsubsection{Objectif}
+
+\begin{itemize}
+    \item Démontrer l'utilisation de HttpClient
+    \item Consommer une API REST tierce
+    \item Désérialiser des données JSON
+    \item Afficher des données externes dans l'interface
+\end{itemize}
+
+\subsection{Implémentation}
+
+\subsubsection{Service HTTP}
+
+\begin{lstlisting}[language=C, caption=Service DummyJsonService.cs]
+public class DummyJsonService : IDummyJsonService
+{
+    private readonly HttpClient _httpClient;
+    private const string BaseUrl = "https://dummyjson.com";
+
+    public async Task<List<DummyJsonUser>> GetUsersAsync(int limit = 30)
+    {
+        var response = await _httpClient.GetAsync($"/users?limit={limit}");
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<DummyJsonUsersResponse>(json);
+        return result?.Users ?? new List<DummyJsonUser>();
+    }
+}
+\end{lstlisting}
+
+\subsection{Affichage}
+
+Les 30 utilisateurs fictifs sont affichés dans la page "Gestion des Utilisateurs" (accessible uniquement à l'Admin) :
+
+\begin{itemize}
+    \item Intégrés dans le même tableau que les utilisateurs réels
+    \item Badge "Client" pour uniformité
+    \item 0 réservation et \$0.00 de dépenses
+    \item Affichage : Nom, Email, Rôle, Réservations, Total
+\end{itemize}
+
+\newpage
+\section{Interface Utilisateur}
+
+\subsection{Design et Ergonomie}
+
+\subsubsection{Thème Visuel}
+
+L'interface utilise un design moderne et épuré :
+
+\begin{itemize}
+    \item Palette de couleurs cohérente (bleu/vert)
+    \item Icônes Font Awesome pour une meilleure lisibilité
+    \item Cards avec ombres pour la profondeur
+    \item Espacement généreux pour la clarté
+\end{itemize}
+
+\subsubsection{Navigation}
+
+La barre de navigation s'adapte selon le rôle de l'utilisateur :
+
+\begin{itemize}
+    \item Menu contextuel selon les permissions
+    \item Icône de panier flottante pour les clients
+    \item Dropdown utilisateur avec accès au profil
+    \item Responsive sur tous les écrans
+\end{itemize}
+
+\subsection{Pages Principales}
+
+\subsubsection{Page d'Accueil}
+
+\begin{itemize}
+    \item Section héros avec image d'accroche
+    \item Présentation des terrains disponibles
+    \item Boutons d'action contextuels par rôle
+    \item Section avantages et témoignages
+\end{itemize}
+
+\subsubsection{Page Réserver}
+
+\begin{itemize}
+    \item Filtres dynamiques (Type, Localisation, Date)
+    \item Grille de terrains avec images
+    \item Affichage des créneaux disponibles
+    \item Action rapide "Réserver le terrain"
+\end{itemize}
+
+\subsubsection{Tableau de Bord Admin}
+
+\begin{itemize}
+    \item Statistiques en temps réel
+    \item Graphiques de revenus
+    \item Top clients et terrains populaires
+    \item Liste des réservations récentes
+\end{itemize}
+
+\subsubsection{Gestion des Gains (Fournisseur)}
+
+\begin{itemize}
+    \item Total des gains cumulés
+    \item Nombre de réservations payées
+    \item Gain moyen par réservation
+    \item Détail par terrain
+    \item Historique complet
+\end{itemize}
+
+\newpage
+\section{Fonctionnalités Techniques}
+
+\subsection{Entity Framework Core}
+
+\subsubsection{Migrations}
+
+L'application utilise EF Core Migrations pour la gestion du schéma de base de données :
+
+\begin{lstlisting}[language=bash, caption=Commandes de Migration]
+# Créer une migration
+dotnet ef migrations add NomDeLaMigration
+
+# Appliquer les migrations
+dotnet ef database update
+
+# Réinitialiser la base
+dotnet ef database drop --force
+dotnet ef database update
+\end{lstlisting}
+
+\subsubsection{Historique des Migrations}
+
+\begin{enumerate}
+    \item \texttt{InitialCreate} : Création du schéma initial
+    \item \texttt{SimplifierReservationsSansPlaces} : Suppression des quantités
+    \item \texttt{AjouterFournisseurAuxTerrains} : Lien terrain-fournisseur
+\end{enumerate}
+
+\subsection{Services Métier}
+
+L'application utilise l'injection de dépendances pour les services :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Service} & \textbf{Responsabilité} \\ \midrule
+IPaiementService & Gestion des paiements Stripe \\
+IFactureService & Génération des factures \\
+ICreneauService & Gestion des créneaux \\
+IDummyJsonService & Consommation API externe \\ \bottomrule
+\end{tabular}
+\caption{Services de l'Application}
+\end{table}
+
+\subsection{Sécurité}
+
+\subsubsection{Authentification}
+
+\begin{itemize}
+    \item ASP.NET Core Identity pour la gestion des utilisateurs
+    \item Hachage des mots de passe avec PBKDF2
+    \item Cookies sécurisés HttpOnly
+    \item Protection CSRF avec AntiForgeryToken
+\end{itemize}
+
+\subsubsection{Autorisation}
+
+\begin{itemize}
+    \item Attribut \texttt{[Authorize(Roles = "...")]} sur les contrôleurs
+    \item Vérification de propriété pour les ressources
+    \item Redirection vers AccessDenied si non autorisé
+\end{itemize}
+
+\subsection{Validation}
+
+\subsubsection{Validation Côté Serveur}
+
+\begin{lstlisting}[language=C, caption=Exemple de Validation]
+[Required(ErrorMessage = "Le nom est requis")]
+[StringLength(100)]
+public string Nom { get; set; }
+
+[Required]
+[EmailAddress]
+public string Email { get; set; }
+
+[Range(0, double.MaxValue)]
+public decimal Prix { get; set; }
+\end{lstlisting}
+
+\subsubsection{Validation Côté Client}
+
+\begin{itemize}
+    \item jQuery Validation Unobtrusive
+    \item Validation en temps réel des formulaires
+    \item Messages d'erreur contextuels
+\end{itemize}
+
+\newpage
+\section{Tests et Qualité}
+
+\subsection{Tests Manuels}
+
+L'application a été testée manuellement pour tous les scénarios utilisateurs :
+
+\subsubsection{Scénarios Testés}
+
+\begin{enumerate}
+    \item Inscription et connexion avec chaque rôle
+    \item Création et gestion de terrains par fournisseur
+    \item Recherche et filtrage de terrains par client
+    \item Ajout au panier et gestion du panier
+    \item Processus complet de paiement avec Stripe
+    \item Annulation de réservations
+    \item Consultation des factures
+    \item Visualisation des gains pour fournisseurs
+    \item Dashboard administrateur
+    \item Intégration API DummyJSON
+\end{enumerate}
+
+\subsection{Gestion des Erreurs}
+
+\begin{itemize}
+    \item Messages d'erreur clairs et explicites
+    \item Page d'erreur personnalisée
+    \item Logging avec ILogger
+    \item Gestion des exceptions dans les contrôleurs
+\end{itemize}
+
+\newpage
+\section{Difficultés Rencontrées et Solutions}
+
+\subsection{Disponibilité des Créneaux}
+
+\textbf{Problème} : Les créneaux n'étaient pas marqués comme indisponibles après ajout au panier.
+
+\textbf{Solution} :
+\begin{itemize}
+    \item Ajout du champ \texttt{EstDisponible} au modèle Creneau
+    \item Mise à jour lors de l'ajout au panier
+    \item Remise à disponible lors de l'annulation
+\end{itemize}
+
+\subsection{Relation Terrain-Fournisseur}
+
+\textbf{Problème} : Les terrains créés par les fournisseurs n'étaient pas liés correctement.
+
+\textbf{Solution} :
+\begin{itemize}
+    \item Migration pour ajouter \texttt{FournisseurId}
+    \item Relation de clé étrangère vers AspNetUsers
+    \item Filtrage par fournisseur dans les requêtes
+\end{itemize}
+
+\newpage
+\section{Conclusion}
+
+\subsection{Bilan du Projet}
+
+Ce projet de système de réservation de terrains de football a permis de mettre en pratique de nombreux concepts du développement web moderne avec ASP.NET Core MVC :
+
+\begin{itemize}
+    \item Architecture MVC et séparation des responsabilités
+    \item Entity Framework Core et gestion de base de données
+    \item Authentification et autorisation multi-rôles
+    \item Intégration de services de paiement (Stripe)
+    \item Consommation d'APIs REST externes
+    \item Design responsive et expérience utilisateur
+    \item Gestion d'état et flux de données
+\end{itemize}
+
+\subsection{Compétences Acquises}
+
+La réalisation de ce projet a permis de développer des compétences dans :
+
+\begin{enumerate}
+    \item \textbf{Backend} : Développement avec C\# et ASP.NET Core
+    \item \textbf{Base de données} : Conception et gestion avec EF Core
+    \item \textbf{Sécurité} : Authentification, autorisation et protection des données
+    \item \textbf{Paiement en ligne} : Intégration Stripe et gestion des transactions
+    \item \textbf{APIs} : Consommation d'APIs REST tierces
+    \item \textbf{Frontend} : Interfaces utilisateur avec Razor et Bootstrap
+    \item \textbf{Architecture} : Conception d'applications web structurées
+\end{enumerate}
+
+\subsection{Travail d'Équipe}
+
+La collaboration entre Aboubacar Tounkara (Backend) et Eli Daniel Senyo (Frontend) a été exemplaire :
+
+\begin{itemize}
+    \item \textbf{Complémentarité} : Les compétences backend et frontend se sont parfaitement complétées
+    \item \textbf{Communication} : Échanges réguliers pour assurer la cohérence de l'application
+    \item \textbf{Qualité} : Respect des standards de développement et des bonnes pratiques
+    \item \textbf{Résultats} : Application fonctionnelle, moderne et professionnelle
+\end{itemize}
+
+\subsection{Perspectives}
+
+L'application constitue une base solide pour un système de réservation complet. Les compétences acquises en backend et frontend permettent d'envisager des projets encore plus ambitieux à l'avenir.
+
+\vspace{1cm}
+
+\begin{center}
+\textit{Ce projet démontre la maîtrise des technologies du commerce électronique et du développement web full-stack avec ASP.NET Core.}
+\end{center}
+
+\newpage
+\appendix
+
+\section{Annexes}
+
+\subsection{A. Structure de la Base de Données}
+
+\subsubsection{Schéma Relationnel}
+
+\textbf{AspNetUsers}
+\begin{itemize}
+    \item Id (PK) : nvarchar(450)
+    \item Nom : nvarchar(100)
+    \item Email : nvarchar(256)
+    \item Role : nvarchar(max)
+    \item DateInscription : datetime2
+\end{itemize}
+
+\textbf{Terrains}
+\begin{itemize}
+    \item Id (PK) : int
+    \item FournisseurId (FK) : nvarchar(450)
+    \item Nom : nvarchar(100)
+    \item Type : nvarchar(50)
+    \item Localisation : nvarchar(200)
+    \item Description : nvarchar(max)
+    \item ImageUrl : nvarchar(max)
+\end{itemize}
+
+\textbf{Creneaux}
+\begin{itemize}
+    \item Id (PK) : int
+    \item TerrainId (FK) : int
+    \item Date : datetime2
+    \item HeureDebut : time
+    \item HeureFin : time
+    \item Prix : decimal(18,2)
+    \item EstDisponible : bit
+\end{itemize}
+
+\textbf{Reservations}
+\begin{itemize}
+    \item Id (PK) : int
+    \item UtilisateurId (FK) : nvarchar(450)
+    \item CreneauId (FK) : int
+    \item MontantTotal : decimal(18,2)
+    \item Statut : nvarchar(50)
+    \item DateReservation : datetime2
+\end{itemize}
+
+\textbf{Paiements}
+\begin{itemize}
+    \item Id (PK) : int
+    \item ReservationId (FK) : int
+    \item StripePaymentIntentId : nvarchar(max)
+    \item Montant : decimal(18,2)
+    \item Statut : nvarchar(50)
+    \item DatePaiement : datetime2
+\end{itemize}
+
+\textbf{Factures}
+\begin{itemize}
+    \item Id (PK) : int
+    \item ReservationId (FK) : int
+    \item NumeroFacture : nvarchar(50)
+    \item Montant : decimal(18,2)
+    \item Date : datetime2
+\end{itemize}
+
+\subsection{B. Endpoints API}
+
+\begin{longtable}{@{}p{2cm}p{5cm}p{6cm}@{}}
+\toprule
+\textbf{Méthode} & \textbf{Route} & \textbf{Description} \\ \midrule
+\endhead
+
+GET & /Home/Index & Page d'accueil \\
+GET & /Home/Reserver & Page de recherche terrains \\
+GET & /Home/DetailsTerrain/\{id\} & Détails d'un terrain \\
+\midrule
+
+GET & /Account/Register & Formulaire inscription \\
+POST & /Account/Register & Traitement inscription \\
+GET & /Account/Login & Formulaire connexion \\
+POST & /Account/Login & Traitement connexion \\
+POST & /Account/Logout & Déconnexion \\
+\midrule
+
+GET & /Cart/Index & Panier du client \\
+POST & /Cart/Add & Ajouter au panier \\
+POST & /Cart/Remove & Retirer du panier \\
+\midrule
+
+GET & /Checkout/Index & Page de paiement \\
+POST & /Checkout/CreatePaymentIntent & Créer PaymentIntent \\
+POST & /Checkout/ConfirmPayment & Confirmer paiement \\
+GET & /Checkout/Success & Page de succès \\
+\midrule
+
+GET & /Reservations/MyBookings & Mes réservations \\
+GET & /Reservations/History & Historique factures \\
+GET & /Reservations/Invoice/\{id\} & Détails facture \\
+POST & /Reservations/Cancel/\{id\} & Annuler réservation \\
+\midrule
+
+GET & /FournisseurTerrains/Index & Liste terrains fournisseur \\
+GET & /FournisseurTerrains/Create & Formulaire création \\
+POST & /FournisseurTerrains/Create & Enregistrer terrain \\
+GET & /FournisseurTerrains/Gains & Gains cumulés \\
+\midrule
+
+GET & /Admin/Dashboard & Dashboard admin \\
+GET & /Admin/Utilisateurs & Liste utilisateurs \\
+GET & /Admin/Reservations & Liste réservations \\
+GET & /Admin/Terrains & Liste terrains \\
+\bottomrule
+\end{longtable}
+
+\subsection{C. Configuration Requise}
+
+\subsubsection{Environnement de Développement}
+
+\begin{itemize}
+    \item .NET 8.0 SDK ou supérieur
+    \item Visual Studio 2022 ou VS Code
+    \item SQL Server LocalDB ou SQL Server
+    \item Navigateur web moderne (Chrome, Edge, Firefox)
+\end{itemize}
+
+\subsubsection{Configuration appsettings.json}
+
+\begin{lstlisting}[language=json, caption=Configuration Minimale]
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ReservationTerrainsDB;Trusted_Connection=true;MultipleActiveResultSets=true"
+  },
+  "Stripe": {
+    "PublishableKey": "pk_test_...",
+    "SecretKey": "sk_test_..."
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+\end{lstlisting}
+
+\subsection{D. Installation et Démarrage}
+
+\begin{lstlisting}[language=bash, caption=Commandes de Démarrage]
+# Cloner ou extraire le projet
+cd reservation-terrains-football-main
+
+# Restaurer les packages NuGet
+dotnet restore
+
+# Appliquer les migrations
+dotnet ef database update
+
+# Lancer l'application
+dotnet run
+
+# Ouvrir dans le navigateur
+# https://localhost:5001
+\end{lstlisting}
+
+\subsection{E. Références}
+
+\begin{enumerate}
+    \item Documentation ASP.NET Core : \url{https://docs.microsoft.com/aspnet/core/}
+    \item Entity Framework Core : \url{https://docs.microsoft.com/ef/core/}
+    \item Stripe API : \url{https://stripe.com/docs/api}
+    \item Bootstrap 5 : \url{https://getbootstrap.com/docs/5.0/}
+    \item DummyJSON API : \url{https://dummyjson.com/}
+\end{enumerate}
+
+\end{document}

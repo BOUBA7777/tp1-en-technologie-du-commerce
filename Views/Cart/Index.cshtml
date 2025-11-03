@@ -1,0 +1,111 @@
+@model IEnumerable<TP1.Models.PanierItem>
+@{
+    ViewData["Title"] = "Mon Panier";
+    var total = ViewBag.Total as decimal? ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-cart me-2"></i>Mon Panier</h2>
+    @if (Model.Any())
+    {
+        <form asp-action="Clear" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Vider le panier ?')">
+                <i class="fas fa-trash me-2"></i>Vider le panier
+            </button>
+        </form>
+    }
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        <div class="col-lg-8">
+            @foreach (var item in Model)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                @if (!string.IsNullOrEmpty(item.Creneau.Terrain.ImageUrl))
+                                {
+                                    <img src="@item.Creneau.Terrain.ImageUrl" class="img-fluid rounded" alt="@item.Creneau.Terrain.Nom">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                        <i class="fas fa-futbol fa-2x"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-1 fw-bold">@item.Creneau.Terrain.Nom</h5>
+                                <p class="text-muted mb-1">
+                                    <i class="fas fa-map-marker-alt text-danger me-1"></i>@item.Creneau.Terrain.Localisation
+                                </p>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>@item.Creneau.Date.ToString("dddd dd MMMM yyyy")
+                                    </small>
+                                </div>
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>@item.Creneau.HeureDebut.ToString(@"hh\:mm") - @item.Creneau.HeureFin.ToString(@"hh\:mm")
+                                        <span class="badge bg-secondary ms-2">90 min</span>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <h4 class="text-primary mb-0">@item.Creneau.Prix.ToString("C")</h4>
+                            </div>
+                            <div class="col-md-1 text-end">
+                                <form asp-action="Remove" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Récapitulatif</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Nombre de créneaux :</span>
+                        <strong>@Model.Count()</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <h5>Total:</h5>
+                        <h4 class="text-primary">@total.ToString("C")</h4>
+                    </div>
+                    <div class="d-grid">
+                        <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card me-2"></i>Procéder au paiement
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+            <h3>Votre panier est vide</h3>
+            <p class="text-muted">Ajoutez des créneaux pour commencer votre réservation</p>
+            <a asp-controller="Home" asp-action="Reserver" class="btn btn-primary mt-3 btn-lg">
+                <i class="fas fa-search me-2"></i>Parcourir les créneaux
+            </a>
+        </div>
+    </div>
+}

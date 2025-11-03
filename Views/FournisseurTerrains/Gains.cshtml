@@ -1,0 +1,135 @@
+@model IEnumerable<TP1.Models.Reservation>
+@{
+    ViewData["Title"] = "Mes Gains";
+    var totalRevenu = ViewBag.TotalRevenu as decimal? ?? 0;
+    var totalReservations = ViewBag.TotalReservations as int? ?? 0;
+    var gainsParTerrain = ViewBag.GainsParTerrain as dynamic;
+}
+
+<h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Mes Gains Cumulés</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                <h3 class="text-success">@totalRevenu.ToString("C")</h3>
+                <p class="text-muted mb-0">Total des Gains</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                <h3 class="text-primary">@totalReservations</h3>
+                <p class="text-muted mb-0">Réservations Payées</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                <h3 class="text-info">@(totalReservations > 0 ? "$" + (totalRevenu / totalReservations).ToString("0.00") : "$0.00")</h3>
+                <p class="text-muted mb-0">Gain Moyen</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (gainsParTerrain != null && ((IEnumerable<dynamic>)gainsParTerrain).Any())
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-futbol me-2"></i>Gains par Terrain</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Terrain</th>
+                            <th class="text-center">Nombre de Réservations</th>
+                            <th class="text-end">Total des Gains</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in gainsParTerrain)
+                        {
+                            <tr>
+                                <td><strong>@item.TerrainNom</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">@item.TotalReservations</span>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">@item.TotalGains.ToString("C")</strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Historique des Réservations Payées</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date Réservation</th>
+                            <th>Client</th>
+                            <th>Terrain</th>
+                            <th>Créneau</th>
+                            <th class="text-end">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var reservation in Model)
+                        {
+                            <tr>
+                                <td>@reservation.DateReservation.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <strong>@reservation.Utilisateur.Nom</strong><br/>
+                                    <small class="text-muted">@reservation.Utilisateur.Email</small>
+                                </td>
+                                <td>@reservation.Creneau.Terrain.Nom</td>
+                                <td>
+                                    <small>
+                                        @reservation.Creneau.Date.ToString("dd/MM/yyyy")<br/>
+                                        @reservation.Creneau.HeureDebut.ToString(@"hh\:mm") - @reservation.Creneau.HeureFin.ToString(@"hh\:mm")
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">@reservation.MontantTotal.ToString("C")</strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Aucune réservation payée pour vos terrains pour le moment.
+    </div>
+}
+
+<div class="text-center mt-4">
+    <a href="@Url.Action("Index", "FournisseurTerrains")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à mes terrains
+    </a>
+</div>
+

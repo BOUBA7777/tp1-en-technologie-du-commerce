@@ -1,0 +1,130 @@
+@model TP1.Models.DummyJsonUser
+
+@{
+    ViewData["Title"] = $"Détails - {Model.FullName}";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-user-circle"></i> Détails de l'utilisateur (API REST)</h2>
+            <p class="text-muted">
+                <i class="fas fa-cloud"></i> Données récupérées depuis Dummy JSON API
+            </p>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <img src="@Model.Image" 
+                         alt="@Model.FullName" 
+                         class="rounded-circle mb-3" 
+                         width="150" 
+                         height="150"
+                         onerror="this.src='https://via.placeholder.com/150'">
+                    <h4>@Model.FullName</h4>
+                    <p class="text-muted">@@@Model.Username</p>
+                    <span class="badge bg-primary">ID: @Model.Id</span>
+                    <span class="badge bg-info">@Model.Age ans</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informations Personnelles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user"></i> Prénom:</strong>
+                            <p>@Model.FirstName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user"></i> Nom:</strong>
+                            <p>@Model.LastName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-envelope"></i> Email:</strong>
+                            <p><a href="mailto:@Model.Email">@Model.Email</a></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-phone"></i> Téléphone:</strong>
+                            <p>@Model.Phone</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-birthday-cake"></i> Date de naissance:</strong>
+                            <p>@Model.BirthDate</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-calendar"></i> Âge:</strong>
+                            <p>@Model.Age ans</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Address != null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Adresse</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-road"></i> <strong>Rue:</strong> @Model.Address.Street</p>
+                        <p><i class="fas fa-city"></i> <strong>Ville:</strong> @Model.Address.City</p>
+                        <p><i class="fas fa-map"></i> <strong>État:</strong> @Model.Address.State</p>
+                        <p><i class="fas fa-mail-bulk"></i> <strong>Code postal:</strong> @Model.Address.PostalCode</p>
+                        <p><i class="fas fa-flag"></i> <strong>Pays:</strong> @Model.Address.Country</p>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Company != null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-building"></i> Entreprise</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-briefcase"></i> <strong>Entreprise:</strong> @Model.Company.Name</p>
+                        <p><i class="fas fa-user-tie"></i> <strong>Poste:</strong> @Model.Company.Title</p>
+                        <p><i class="fas fa-sitemap"></i> <strong>Département:</strong> @Model.Company.Department</p>
+                    </div>
+                </div>
+            }
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Source des données:</strong> Ces informations ont été récupérées en temps réel 
+                depuis l'API REST publique Dummy JSON (<code>GET /users/@Model.Id</code>).
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-secondary">
+            <i class="fas fa-home"></i> Dashboard Admin
+        </a>
+    </div>
+</div>
+
+
+
+
+
+

@@ -1,0 +1,189 @@
+@{
+    ViewData["Title"] = "Dashboard Administrateur";
+    var totalReservations = ViewBag.TotalReservations as int? ?? 0;
+    var reservationsPayees = ViewBag.ReservationsPayees as int? ?? 0;
+    var revenuTotal = ViewBag.RevenuTotal as decimal? ?? 0;
+}
+
+<h2 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Dashboard Administrateur</h2>
+
+<!-- KPIs -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center border-primary">
+            <div class="card-body">
+                <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                <h3 class="text-primary">@totalReservations</h3>
+                <p class="text-muted mb-0">Total Réservations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center border-success">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h3 class="text-success">@reservationsPayees</h3>
+                <p class="text-muted mb-0">Confirmées</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center border-info">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-3x text-info mb-3"></i>
+                <h3 class="text-info">@revenuTotal.ToString("C")</h3>
+                <p class="text-muted mb-0">Revenu Total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center border-warning">
+            <div class="card-body">
+                <i class="fas fa-percentage fa-3x text-warning mb-3"></i>
+                <h3 class="text-warning">@(totalReservations > 0 ? Math.Round((decimal)reservationsPayees / totalReservations * 100, 1) : 0)%</h3>
+                <p class="text-muted mb-0">Taux de Conversion</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Clients -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Top 10 Clients</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th class="text-center">Rés.</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var client in ViewBag.TopClients)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@client.Nom</strong><br/>
+                                        <small class="text-muted">@client.Email</small>
+                                    </td>
+                                    <td class="text-center">@client.TotalReservations</td>
+                                    <td class="text-end"><strong class="text-success">@client.TotalDepense.ToString("C")</strong></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taux de Remplissage -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Taux de Remplissage</h5>
+            </div>
+            <div class="card-body">
+                @foreach (var terrain in ViewBag.TauxRemplissage)
+                {
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span><strong>@terrain.TerrainNom</strong> <small class="text-muted">(@terrain.Type)</small></span>
+                            <span class="text-success">@Math.Round(terrain.TauxRemplissage, 1)%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: @terrain.TauxRemplissage%" 
+                                 aria-valuenow="@terrain.TauxRemplissage" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">@terrain.CreneauxReserves réservés sur @terrain.TotalCreneaux créneaux</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Réservations Récentes -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Réservations Récentes</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Terrain</th>
+                        <th>Créneau</th>
+                        <th>Statut</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reservation in ViewBag.ReservationsRecentes)
+                    {
+                        <tr>
+                            <td>@reservation.DateReservation.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <strong>@reservation.Utilisateur.Nom</strong><br/>
+                                <small class="text-muted">@reservation.Utilisateur.Email</small>
+                            </td>
+                            <td>@reservation.Creneau.Terrain.Nom</td>
+                            <td>
+                                <small>
+                                    @reservation.Creneau.Date.ToString("dd/MM")<br/>
+                                    @reservation.Creneau.HeureDebut.ToString(@"hh\:mm")
+                                </small>
+                            </td>
+                            <td>
+                                @switch (reservation.Statut)
+                                {
+                                    case "Payee":
+                                        <span class="badge bg-success">Payée</span>
+                                        break;
+                                    case "EnAttente":
+                                        <span class="badge bg-warning">En attente</span>
+                                        break;
+                                    case "Annulee":
+                                        <span class="badge bg-danger">Annulée</span>
+                                        break;
+                                }
+                            </td>
+                            <td><strong>@reservation.MontantTotal.ToString("C")</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="mb-3">Actions Rapides</h5>
+                <a asp-action="Reservations" class="btn btn-primary me-2">
+                    <i class="fas fa-list me-2"></i>Toutes les réservations
+                </a>
+                <a asp-action="Terrains" class="btn btn-success me-2">
+                    <i class="fas fa-futbol me-2"></i>Gérer les terrains
+                </a>
+                <a asp-action="Utilisateurs" class="btn btn-info">
+                    <i class="fas fa-users me-2"></i>Gérer les utilisateurs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
